@@ -27,9 +27,9 @@ import {
 const CARGO_SIZE = 34; // px de la foto dentro de la canasta
 // Centro de la canasta respecto al centro del carrito (mirando a la derecha)
 const CARGO_OFFSET = { x: 5, y: -23 };
-const ARRIVE_MS = 360;
-const DROP_DELAY = 120;
-const DROP_MS = 520;
+const ARRIVE_MS = 220;
+const DROP_DELAY = 50;
+const DROP_MS = 320;
 const PATH_STEPS = 24;
 const END_SCALE = 0.42; // tamaño al llegar, parecido al icono del Header
 
@@ -85,10 +85,10 @@ function buildCourier(image, point, facingLeft) {
 
 // 1. El carrito llega rodando desde un costado y frena con un pequeño rebote
 function arrive(courier, facingLeft) {
-  const from = facingLeft ? 70 : -70;
+  const from = facingLeft ? 60 : -60;
   return courier.animate(
     [
-      { transform: `translateX(${from}px) scale(0.5)`, opacity: 0 },
+      { transform: `translateX(${from}px) scale(0.6)`, opacity: 0 },
       { transform: `translateX(${-from * 0.08}px) scale(1.04)`, opacity: 1, offset: 0.7 },
       { transform: "translateX(0px) scale(1)", opacity: 1 },
     ],
@@ -117,7 +117,7 @@ function dropIntoBasket(image, rect, basket) {
   // La foto original se "aprieta" al soltar la copia
   image.animate(
     [{ transform: "scale(1)" }, { transform: "scale(0.96)" }, { transform: "scale(1)" }],
-    { duration: 280, delay: DROP_DELAY, easing: "ease-out" }
+    { duration: 240, delay: DROP_DELAY, easing: "ease-out" }
   );
 
   const start = centerOf(rect);
@@ -138,7 +138,7 @@ function dropIntoBasket(image, rect, basket) {
         offset: 0.35,
         // Cae acelerando, como si tuviera peso
         easing: "cubic-bezier(0.55, 0, 0.85, 0.35)",
-        transform: `translate(${(dx * 0.2).toFixed(1)}px, ${(dy * 0.2 - 36).toFixed(1)}px) scale(${liftScale.toFixed(3)})`,
+        transform: `translate(${(dx * 0.2).toFixed(1)}px, ${(dy * 0.2 - 28).toFixed(1)}px) scale(${liftScale.toFixed(3)})`,
         borderRadius: "10%",
       },
       {
@@ -150,7 +150,7 @@ function dropIntoBasket(image, rect, basket) {
     { duration: DROP_MS, delay: DROP_DELAY, fill: "forwards" }
   );
 
-  return waitForAnimation(drop, DROP_DELAY + DROP_MS + 400).then(() => clone.remove());
+  return waitForAnimation(drop, DROP_DELAY + DROP_MS + 300).then(() => clone.remove());
 }
 
 // 3. El carrito "atrapa" la carga: se aplasta y la foto aparece en la canasta
@@ -158,11 +158,11 @@ function catchCargo(body, cargo) {
   cargo.style.opacity = "1";
   cargo.animate(
     [
-      { transform: "translateY(-6px) scale(0.7)" },
+      { transform: "translateY(-5px) scale(0.7)" },
       { transform: "translateY(2px) scale(1.1)", offset: 0.6 },
       { transform: "translateY(0px) scale(1)" },
     ],
-    { duration: 240, easing: "ease-out" }
+    { duration: 180, easing: "ease-out" }
   );
   body.animate(
     [
@@ -171,7 +171,7 @@ function catchCargo(body, cargo) {
       { transform: "scale(0.97, 1.04)", offset: 0.7 },
       { transform: "scale(1, 1)" },
     ],
-    { duration: 260, easing: "ease-out" }
+    { duration: 200, easing: "ease-out" }
   );
 }
 
@@ -181,7 +181,7 @@ function catchCargo(body, cargo) {
 function flyToHeader(courier, from, to, facingLeft) {
   const dx = to.x - from.x;
   const dy = to.y - from.y;
-  const duration = Math.round(clamp(400 + Math.hypot(dx, dy) * 0.45, 600, 950));
+  const duration = Math.round(clamp(320 + Math.hypot(dx, dy) * 0.32, 400, 680));
   const control = { x: dx * 0.35, y: dy };
   const tilt = facingLeft ? 10 : -10;
 
@@ -212,7 +212,7 @@ function startSparkTrail(courier, flight, duration, facingLeft) {
   const tick = (now) => {
     if (flight.playState !== "running" || !courier.isConnected) return;
     const progress = (flight.currentTime || 0) / duration;
-    if (progress > 0.05 && progress < 0.85 && now - lastSpawn > 45) {
+    if (progress > 0.05 && progress < 0.85 && now - lastSpawn > 40) {
       lastSpawn = now;
       const rect = courier.getBoundingClientRect();
       const spark = spawnAt("fly-to-cart-spark", {
@@ -230,7 +230,7 @@ function startSparkTrail(courier, flight, duration, facingLeft) {
             opacity: 0,
           },
         ],
-        { duration: 600, easing: "cubic-bezier(0.2, 0.7, 0.4, 1)" }
+        { duration: 500, easing: "cubic-bezier(0.2, 0.7, 0.4, 1)" }
       );
     }
     requestAnimationFrame(tick);
@@ -241,11 +241,11 @@ function startSparkTrail(courier, flight, duration, facingLeft) {
 // 5. Se funde dentro del carrito del Header
 function absorb(courier) {
   const fade = courier.animate([{ opacity: 1 }, { opacity: 0 }], {
-    duration: 180,
+    duration: 140,
     easing: "ease-in",
     fill: "forwards",
   });
-  waitForAnimation(fade, 500).then(() => courier.remove());
+  waitForAnimation(fade, 350).then(() => courier.remove());
 }
 
 export async function carryToCart(image) {
@@ -273,10 +273,10 @@ export async function carryToCart(image) {
     arrive(courier, facingLeft);
     await dropIntoBasket(image, imageRect, basket);
     catchCargo(parts.body, parts.cargo);
-    await wait(160);
+    await wait(80);
 
     const { flight, duration } = flyToHeader(courier, meet, end, facingLeft);
-    await waitForAnimation(flight, duration + 500);
+    await waitForAnimation(flight, duration + 350);
 
     absorb(courier);
     celebrate(target);
