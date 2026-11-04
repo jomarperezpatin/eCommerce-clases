@@ -35,6 +35,8 @@ export default function Checkout() {
   // --- LÓGICA DE NEGOCIO FINANCIERA ---
   // Cálculos derivados del estado del carrito.
   // Se realizan en cada render para asegurar consistencia.
+  // NOTA: Estos valores son solo para MOSTRAR al usuario. La fuente de
+  // verdad es el backend, que recalcula todo al crear la orden.
   const subtotal = typeof total === "number" ? total : 0;
   const TAX_RATE = 0.16; // IVA 16%
   const SHIPPING_RATE = 350; // Costo de envío estándar
@@ -334,6 +336,7 @@ export default function Checkout() {
 
   /**
    * Crea la orden en la API, redirige a la confirmación y limpia el carrito.
+   * Solo envía productId y quantity; el backend calcula precios y totales.
    */
   const handleCreateOrder = async () => {
     if (
@@ -350,12 +353,9 @@ export default function Checkout() {
       products: cartItems.map((item) => ({
         productId: item._id,
         quantity: item.quantity,
-        price: item.price,  
       })),
       address: selectedAddress._id,
       paymentMethod: selectedPayment._id,
-      totalPrice: grandTotal,
-      shippingCost: shippingCost,
     };
 
     setPlacingOrder(true);

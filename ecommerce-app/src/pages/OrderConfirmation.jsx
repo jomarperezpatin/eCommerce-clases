@@ -18,6 +18,8 @@ export default function OrderConfirmation() {
   if (!nuevaOrden) return null;
 
   const address = nuevaOrden.address || {};
+  const subtotal = nuevaOrden.subtotal || 0;
+  const tax = nuevaOrden.taxAmount || 0;
   const shipping = nuevaOrden.shippingCost || 0;
   const total = nuevaOrden.totalPrice || 0;
   const orderDate = nuevaOrden.createdAt
@@ -59,8 +61,16 @@ export default function OrderConfirmation() {
             </ul>
             <div className="order-totals">
               <p>
+                <strong>Subtotal: </strong>
+                {formatMoney(subtotal)}
+              </p>
+              <p>
+                <strong>IVA: </strong>
+                {formatMoney(tax)}
+              </p>
+              <p>
                 <strong>Envío: </strong>
-                {formatMoney(shipping)}
+                {shipping === 0 ? "Gratis" : formatMoney(shipping)}
               </p>
               <p>
                 <strong>Total:</strong> {formatMoney(total)}

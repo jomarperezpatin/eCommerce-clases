@@ -23,8 +23,8 @@ const createOrderValidation = [
   body("products")
     .notEmpty()
     .withMessage("Products array is required")
-    .isArray()
-    .withMessage("Products must be an array"),
+    .isArray({ min: 1 })
+    .withMessage("Products must be a non-empty array"),
   body("products.*.productId")
     .notEmpty()
     .withMessage("Each product item must include productId")
@@ -35,11 +35,6 @@ const createOrderValidation = [
     .withMessage("Each product item must include quantity")
     .isInt({ min: 1 })
     .withMessage("Quantity must be an integer greater than or equal to 1"),
-  body("products.*.price")
-    .notEmpty()
-    .withMessage("Each product item must include price")
-    .isFloat({ min: 0 })
-    .withMessage("Price must be a positive number"),
   body("address")
     .notEmpty()
     .withMessage("Address is required")
@@ -50,15 +45,6 @@ const createOrderValidation = [
     .withMessage("Payment method is required")
     .isMongoId()
     .withMessage("Payment method must be a valid MongoDB ObjectId"),
-  body("totalPrice")
-    .notEmpty()
-    .withMessage("Total price is required")
-    .isFloat({ min: 0 })
-    .withMessage("Total price must be a positive number"),
-  body("shippingCost")
-    .optional()
-    .isFloat({ min: 0 })
-    .withMessage("Shipping cost must be a positive number"),
 ];
 
 const updateOrderStatusValidation = [

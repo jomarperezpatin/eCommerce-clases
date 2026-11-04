@@ -1,8 +1,17 @@
 import Order from "../models/Order.js";
 import Product from "../models/Product.js";
+import Address from "../models/Address.js";
+import PaymentMethod from "../models/PaymentMethod.js";
 
 // Nunca exponer el hash de la contraseña al hacer populate del usuario
 const USER_FIELDS = "name email";
+
+// ---------- Reglas de negocio de costos ----------
+// Estos valores deben coincidir con lo que muestra el frontend, pero la
+// fuente de verdad para el cálculo es SIEMPRE este controlador.
+const TAX_RATE = 0.16; // IVA 16 %
+const SHIPPING_RATE = 350; // Costo de envío estándar
+const FREE_SHIPPING_THRESHOLD = 1000; // Envío gratis si subtotal >= 1000
 
 // Devuelve al inventario lo que se habia descontado
 const releaseStock = (items) =>
@@ -101,23 +110,81 @@ const getOrderById = async (req, res, next) => {
 const createOrder = async (req, res, next) => {
   try {
     const userId = req.user.userId;
-    const { products, address, paymentMethod, totalPrice, shippingCost } =
-      req.body;
+    const { products, address, paymentMethod } = req.body;
 
-    const stock = await reserveStock(products);
+    // ---- 1. Validar que la dirección y el método de pago pertenezcan al usuario ----
+    const [userAddress, userPayment] = await Promise.all([
+      Address.findOne({ _id: address, user: userId }),
+      PaymentMethod.findOne({ _id: paymentMethod, user: userId }),
+    ]);
+
+    if (!userAddress) {
+      return res
+        .status(404)
+        .json({ message: "Dirección no encontrada o no pertenece al usuario" });
+    }
+    if (!userPayment) {
+      return res
+        .status(404)
+        .json({ message: "Método de pago no encontrado o no pertenece al usuario" });
+    }
+
+    // ---- 2. Obtener los precios REALES de la base de datos ----
+    const productIds = products.map((p) => p.productId);
+    const dbProducts = await Product.find({ _id: { $in: productIds } }).lean();
+
+    // Crear un mapa para búsqueda rápida por _id
+    const productMap = new Map();
+    for (const p of dbProducts) {
+      productMap.set(String(p._id), p);
+    }
+
+    // Verificar que todos los productos existen y construir el arreglo con precios reales
+    const orderProducts = [];
+    for (const item of products) {
+      const dbProduct = productMap.get(String(item.productId));
+      if (!dbProduct) {
+        return res.status(404).json({
+          message: `El producto con ID "${item.productId}" no existe`,
+        });
+      }
+      orderProducts.push({
+        productId: dbProduct._id,
+        quantity: item.quantity,
+        price: dbProduct.price, // Precio REAL de la BD, NUNCA del cliente
+      });
+    }
+
+    // ---- 3. Calcular subtotal, IVA, envío y total en el servidor ----
+    const subtotal = orderProducts.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0,
+    );
+
+    const taxAmount = parseFloat((subtotal * TAX_RATE).toFixed(2));
+    const shippingCost = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_RATE;
+    const totalPrice = parseFloat(
+      (subtotal + taxAmount + shippingCost).toFixed(2),
+    );
+
+    // ---- 4. Reservar stock (operación atómica) ----
+    const stock = await reserveStock(orderProducts);
     if (!stock.ok) {
       return res.status(stock.status).json({ message: stock.message });
     }
 
+    // ---- 5. Crear la orden con los datos calculados por el servidor ----
     let newOrder;
     try {
       newOrder = await Order.create({
         user: userId,
-        products,
+        products: orderProducts,
         address,
         paymentMethod,
-        totalPrice,
+        subtotal,
+        taxAmount,
         shippingCost,
+        totalPrice,
       });
     } catch (error) {
       // Si la orden no se pudo guardar, el stock regresa al inventario

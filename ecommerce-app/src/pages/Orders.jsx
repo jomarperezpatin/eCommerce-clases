@@ -31,10 +31,13 @@ const normalizeOrder = (order) => {
     price: item.price,
     quantity: item.quantity,
   }));
-  const subtotal = items.reduce(
+
+  // Usar los valores calculados por el servidor directamente
+  const subtotal = order.subtotal || items.reduce(
     (sum, item) => sum + (item.price || 0) * (item.quantity || 1),
     0
   );
+  const tax = order.taxAmount || 0;
   const shipping = order.shippingCost || 0;
   const total = order.totalPrice || 0;
 
@@ -46,7 +49,7 @@ const normalizeOrder = (order) => {
     status: STATUS_LABELS[order.status] || order.status,
     items,
     subtotal,
-    tax: Math.max(total - subtotal - shipping, 0),
+    tax,
     shipping,
     total,
     shippingAddress: order.address && {

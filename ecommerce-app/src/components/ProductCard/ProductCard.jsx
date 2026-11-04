@@ -29,25 +29,32 @@ export default function ProductCard({
     );
   }
 
+  const currentStock = typeof stock === "number" ? stock : 0;
   const stockBadge =
-    stock <= 0
+    currentStock <= 0
       ? { text: "Agotado", variant: "error" }
-      : stock <= 5
-        ? { text: `¡${stock === 1 ? "Queda" : "Quedan"} ${stock}!`, variant: "warning" }
+      : currentStock <= 5
+        ? { text: `¡${currentStock === 1 ? "Queda" : "Quedan"} ${currentStock}!`, variant: "warning" }
         : { text: "En stock", variant: "success" };
-  const hasDiscount = product.discount && product.discount > 0;
-  const productLink = `/product/${product._id}`;
+  const hasDiscount = Boolean(product.discount && product.discount > 0);
+  const productId = product._id || product.id || "";
+  const productLink = productId ? `/product/${productId}` : "#";
   const cardClass = `product-card product-card--${orientation} ${className}`.trim();
 
-  const isFavorite = isInWishlist(product._id);
+  const isFavorite = Boolean(productId && isInWishlist(productId));
   const favoriteLabel = isFavorite ? "Quitar de favoritos" : "Agregar a favoritos";
-  const handleToggleWishlist = () => {
+  const handleToggleWishlist = (e) => {
+    e?.preventDefault();
+    e?.stopPropagation();
     if (!isAuthenticated()) {
       navigate("/login");
       return;
     }
     toggleWishlist(product);
   };
+
+  const imageSrc = imagesUrl?.[0] || "/img/products/placeholder.svg";
+  const trimmedDescription = typeof description === "string" ? description.trim() : "";
 
   return (
     <div className={cardClass}>
@@ -64,11 +71,12 @@ export default function ProductCard({
       <Link to={productLink} className="product-card-image-link">
         <img
           ref={imageRef}
-          src={imagesUrl ? imagesUrl[0] : "/img/products/placeholder.svg"}
+          src={imageSrc}
           alt={name}
           className="product-card-image"
           onError={(event) => {
-            event.target.src = "/img/products/placeholder.svg";
+            event.currentTarget.onerror = null;
+            event.currentTarget.src = "/img/products/placeholder.svg";
           }}
         />
       </Link>
@@ -81,14 +89,14 @@ export default function ProductCard({
             {name}
           </Link>
         </h3>
-        {description && (
+        {trimmedDescription && (
           <p
             className="muted"
             style={{ fontSize: "13px", marginBottom: "8px" }}
           >
-            {description.length > 60
-              ? `${description.substring(0, 60)}...`
-              : description}
+            {trimmedDescription.length > 60
+              ? `${trimmedDescription.substring(0, 60)}...`
+              : trimmedDescription}
           </p>
         )}
         <div className="product-card-price">${price}</div>
