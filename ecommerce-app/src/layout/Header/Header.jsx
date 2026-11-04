@@ -17,6 +17,19 @@ export default function Header() {
   const totalItems = getTotalItems();
   const navigate = useNavigate();
 
+  // Animación del carrito en el Header al agregar productos
+  const [isCartBumping, setIsCartBumping] = useState(false);
+  const prevItemsRef = useRef(totalItems);
+
+  useEffect(() => {
+    if (totalItems > prevItemsRef.current) {
+      setIsCartBumping(true);
+      const timer = setTimeout(() => setIsCartBumping(false), 750);
+      return () => clearTimeout(timer);
+    }
+    prevItemsRef.current = totalItems;
+  }, [totalItems]);
+
   // Estado de autenticación; se sincroniza con localStorage via el evento "storage"
   const [isAuth, setIsAuth] = useState(isAuthenticated());
   const [user, setUser] = useState(getCurrentUser());
@@ -360,12 +373,19 @@ export default function Header() {
               {/* Cart Button */}
               <Link
                 to="/cart"
-                className="cart-btn"
+                className={`cart-btn ${isCartBumping ? "cart-btn--bumping" : ""}`}
                 aria-label="Ver carrito de compras"
                 data-cart-target
               >
                 <Icon name="shoppingCart" size={24} />
-                <span className="cart-badge">{totalItems}</span>
+                <span className={`cart-badge ${isCartBumping ? "cart-badge--bump" : ""}`}>
+                  {totalItems}
+                </span>
+                {isCartBumping && (
+                  <span className="cart-floating-plus" aria-hidden="true">
+                    +1
+                  </span>
+                )}
               </Link>
 
               {/* Desktop Theme Toggle */}
