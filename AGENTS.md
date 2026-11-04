@@ -403,3 +403,15 @@ Ubicados en `ecommerce-api/src/middlewares/`:
 * **Regla para `user-event` v14**: Las interacciones deben ser asíncronas e iniciadas con `const user = userEvent.setup();` (e.g. `await user.click(...)`), no con métodos síncronos legados de v13.
 * Los tests de componentes van ubicados en la misma carpeta junto al componente correspondiente, bajo el formato `NombreComponente.test.jsx`.
 * Se prueba lo que ve el usuario (textos, botones, estados y comportamientos en el DOM), no los detalles internos o de implementación del componente.
+
+
+---
+
+## 7. CI/CD (GitHub Actions)
+
+* **Workflow de Frontend** (`.github/workflows/frontend.yml`):
+  * Se activa en `push` y `pull_request` dirigidos a la rama `main`.
+  * Configura Node.js 20 con caché de dependencias npm basado en `ecommerce-app/package-lock.json`.
+  * Ejecuta los pasos dentro del subdirectorio `ecommerce-app/` (`defaults.run.working-directory`).
+  * Instala dependencias limpias con `npm ci`.
+  * Ejecuta la suite de pruebas en modo CI con `npm test -- --watchAll=false` (`CI=true`).
