@@ -29,7 +29,26 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Run tests
+      - name: Run unit tests
         run: npm test -- --watchAll=false
         env:
           CI: true
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Run E2E tests (Cypress)
+        uses: cypress-io/github-action@v6
+        with:
+          working-directory: ecommerce-app
+          install: false
+          start: npx --yes serve -s build -l 3000
+          wait-on: 'http://localhost:3000'
+
+      - name: Upload Cypress screenshots on failure
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: cypress-screenshots
+          path: ecommerce-app/cypress/screenshots
+          if-no-files-found: ignore

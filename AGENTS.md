@@ -116,11 +116,11 @@ ecommerce-app/src/
 │   │   │   └── AddToCartButton.css
 │   │   ├── Badge/
 │   │   │   ├── Badge.jsx
-│   │   │   ├── Badge.css
+│   │   │   └── Badge.css
 │   │   │   └── index.js
 │   │   ├── Button/
 │   │   │   ├── Button.jsx
-│   │   │   ├── Button.css
+│   │   │   └── Button.css
 │   │   │   └── index.js
 │   │   ├── ErrorMessage/
 │   │   │   ├── ErrorMessage.jsx
@@ -413,5 +413,8 @@ Ubicados en `ecommerce-api/src/middlewares/`:
   * Se activa en `push` y `pull_request` dirigidos a la rama `main`.
   * Configura Node.js 20 con caché de dependencias npm basado en `ecommerce-app/package-lock.json`.
   * Ejecuta los pasos dentro del subdirectorio `ecommerce-app/` (`defaults.run.working-directory`).
-  * Instala dependencias limpias con `npm ci`.
-  * Ejecuta la suite de pruebas en modo CI con `npm test -- --watchAll=false` (`CI=true`).
+  * Instala dependencias con `npm install` para tolerar desincronizaciones del lockfile.
+  * Ejecuta la suite de pruebas unitarias en modo CI con `npm test -- --watchAll=false` (`CI=true`).
+  * Compila la aplicación con `npm run build`.
+  * Ejecuta las pruebas E2E con Cypress (`cypress-io/github-action@v6`) sirviendo la build en `http://localhost:3000`.
+  * Adjunta las capturas de pantalla como artefactos si alguna prueba falla (`actions/upload-artifact@v4`).

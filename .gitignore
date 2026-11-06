@@ -12,3 +12,10 @@ yarn-error.log*
 *.log
 .vscode/
 .idea/
+powershell.bat
+powershell.cmd
+
+# Cypress
+cypress/videos/
+cypress/screenshots/
+cypress/downloads/
