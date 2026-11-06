@@ -416,5 +416,5 @@ Ubicados en `ecommerce-api/src/middlewares/`:
   * Instala dependencias con `npm install` para tolerar desincronizaciones del lockfile.
   * Ejecuta la suite de pruebas unitarias en modo CI con `npm test -- --watchAll=false` (`CI=true`).
   * Compila la aplicación con `npm run build`.
-  * Ejecuta las pruebas E2E con Cypress (`cypress-io/github-action@v6`) sirviendo la build en `http://localhost:3000`.
+  * Ejecuta las pruebas E2E con Cypress (`cypress-io/github-action@v7`) sirviendo la build en `http://127.0.0.1:3000`.
   * Adjunta las capturas de pantalla como artefactos si alguna prueba falla (`actions/upload-artifact@v4`).

@@ -38,12 +38,12 @@ jobs:
         run: npm run build
 
       - name: Run E2E tests (Cypress)
-        uses: cypress-io/github-action@v6
+        uses: cypress-io/github-action@v7
         with:
           working-directory: ecommerce-app
           install: false
           start: npx --yes serve -s build -l 3000
-          wait-on: 'http://localhost:3000'
+          wait-on: 'http://127.0.0.1:3000'
 
       - name: Upload Cypress screenshots on failure
         uses: actions/upload-artifact@v4
