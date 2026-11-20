@@ -22,7 +22,7 @@ const PaymentItem = ({ payment, isSelected, onSelect, onEdit, onDelete }) => {
         )}
       </div>
       <div className="payment-actions">
-        <Button onClick={() => onSelect(payment)} disabled={isSelected}>
+        <Button onClick={() => onSelect(payment)} data-testid="select-payment-btn" disabled={isSelected}>
           {isSelected ? "Seleccionada" : "Seleccionar"}
         </Button>
         <Button variant="secondary" onClick={() => onEdit(payment)}>

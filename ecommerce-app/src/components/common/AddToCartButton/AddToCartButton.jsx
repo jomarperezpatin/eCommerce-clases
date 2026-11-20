@@ -77,6 +77,7 @@ export default function AddToCartButton({
         disabled={status === "adding" || remaining <= 0}
         onClick={handleClick}
         title={title}
+        data-testid="add-to-cart-btn"
       >
         {icon && (
           <span className="add-to-cart-icon" key={icon}>

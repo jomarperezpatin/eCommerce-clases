@@ -61,10 +61,70 @@ const updateOrderStatusValidation = [
     .withMessage("Invalid payment status"),
 ];
 
+/**
+ * @openapi
+ * /orders:
+ *   get:
+ *     summary: Lista todas las órdenes del sistema (solo administradores)
+ *     tags:
+ *       - Orders
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de todas las órdenes
+ *       401:
+ *         description: No autenticado
+ *       403:
+ *         description: Acceso denegado (requiere rol de administrador)
+ */
 router.get("/orders", authMiddleware, isAdmin, getOrders);
 
+/**
+ * @openapi
+ * /orders/my-orders:
+ *   get:
+ *     summary: Lista las órdenes del usuario autenticado
+ *     tags:
+ *       - Orders
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Historial de órdenes del usuario
+ *       401:
+ *         description: No autenticado
+ */
 router.get("/orders/my-orders", authMiddleware, getMyOrders);
 
+/**
+ * @openapi
+ * /orders/{id}:
+ *   get:
+ *     summary: Obtiene el detalle de una orden por su ID
+ *     tags:
+ *       - Orders
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID de la orden (ObjectId)
+ *     responses:
+ *       200:
+ *         description: Detalle de la orden
+ *       400:
+ *         description: ID inválido
+ *       401:
+ *         description: No autenticado
+ *       403:
+ *         description: Acceso denegado
+ *       404:
+ *         description: Orden no encontrada
+ */
 router.get(
   "/orders/:id",
   authMiddleware,
@@ -73,6 +133,29 @@ router.get(
   getOrderById,
 );
 
+/**
+ * @openapi
+ * /orders:
+ *   post:
+ *     summary: Crea una nueva orden de compra
+ *     tags:
+ *       - Orders
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CreateOrderInput'
+ *     responses:
+ *       201:
+ *         description: Orden creada exitosamente
+ *       400:
+ *         description: Datos inválidos o stock insuficiente
+ *       401:
+ *         description: No autenticado
+ */
 router.post(
   "/orders",
   authMiddleware,
@@ -81,6 +164,40 @@ router.post(
   createOrder,
 );
 
+/**
+ * @openapi
+ * /orders/{id}:
+ *   put:
+ *     summary: Actualiza el estado de una orden (solo administradores)
+ *     tags:
+ *       - Orders
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID de la orden
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UpdateOrderStatusInput'
+ *     responses:
+ *       200:
+ *         description: Estado de la orden actualizado
+ *       400:
+ *         description: Datos inválidos
+ *       401:
+ *         description: No autenticado
+ *       403:
+ *         description: Acceso denegado (requiere rol de administrador)
+ *       404:
+ *         description: Orden no encontrada
+ */
 router.put(
   "/orders/:id",
   authMiddleware,

@@ -21,7 +21,7 @@ const AddressItem = ({ address, isSelected, onSelect, onEdit, onDelete }) => {
         )}
       </div>
       <div className="address-actions">
-        <Button onClick={() => onSelect(address)} disabled={isSelected}>
+        <Button onClick={() => onSelect(address)} data-testid="select-address-btn" disabled={isSelected}>
           {isSelected ? "Seleccionada" : "Seleccionar"}
         </Button>
         <Button variant="secondary" onClick={() => onEdit(address)}>
