@@ -144,3 +144,143 @@ El flujo de trabajo en `.github/workflows/frontend.yml` ejecuta tanto las prueba
    * Esperar a que el puerto esté listo (`wait-on`).
    * Correr las pruebas E2E (`home.cy.js` y `login.cy.js`) en entorno Linux con Xvfb gestionado.
 5. **Captura de artefactos:** Si alguna prueba llegara a fallar, sube automáticamente las capturas de pantalla tomadas por Cypress para facilitar la depuración desde la interfaz de GitHub.
+
+
+---
+
+## 8. Documentación de la API con Swagger (`/api-docs`)
+
+Se documentaron **todos los endpoints del backend (`ecommerce-api`)** utilizando OpenAPI 3.0 con `swagger-jsdoc` y la interfaz interactiva con `swagger-ui-express`.
+
+### Configuración principal
+* **Ruta de acceso en navegador:** `http://localhost:4000/api-docs`
+* **Archivo de configuración:** [`ecommerce-api/src/config/swagger.js`](file:///C:/Indapdos/3Modulo/FS2026-01-Integracion/ecommerce-api/src/config/swagger.js)
+* **Punto de montaje condicional:** [`ecommerce-api/server.js`](file:///C:/Indapdos/3Modulo/FS2026-01-Integracion/ecommerce-api/server.js) solo monta `/api-docs` si `process.env.NODE_ENV !== "production"`. En producción, la ruta queda completamente apagada y responde `404 Not Found`, protegiendo la arquitectura de la API contra escaneos públicos.
+* **Autenticación en Swagger (`bearerAuth`):** Se configuró el esquema de seguridad Bearer JWT. Esto habilita el botón verde **"Authorize"** en la parte superior derecha de la interfaz, permitiendo pegar un token JWT y probar endpoints protegidos directamente desde Swagger.
+* **Modelos y esquemas:** Se definieron esquemas detallados en `components.schemas` con valores de ejemplo para `RegisterInput`, `LoginInput`, `RefreshInput`, `Product`, `Category`, `CartInput`, `AddToCartInput`, `CreateOrderInput`, `UpdateOrderStatusInput`, `PaymentMethodInput`, `AddressInput`, `UserInput`, `UpdateUserInput` y `AddWishlistInput`.
+
+---
+
+### Módulos y endpoints documentados (Total: 44 operaciones en 27 rutas)
+
+| Módulo / Tag | Método | Ruta | Requiere Token (`bearerAuth`) | Rol / Permiso | Descripción |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Auth** | `POST` | `/api/auth/register` | No | Público | Registra un nuevo usuario con carrito inicial vacío |
+| **Auth** | `POST` | `/api/auth/login` | No | Público | Inicia sesión y devuelve access token y refresh token |
+| **Auth** | `POST` | `/api/auth/refresh` | No | Público | Renueva el access token mediante el refresh token |
+| **Products** | `GET` | `/api/products/search` | No | Público | Búsqueda y filtrado avanzado (búsqueda, categoría, precio, stock, orden, paginación) |
+| **Products** | `GET` | `/api/products` | No | Público | Lista todos los productos disponibles |
+| **Products** | `GET` | `/api/products/{id}` | No | Público | Obtiene el detalle de un producto por su ObjectId |
+| **Products** | `POST` | `/api/products` | **Sí** | Admin | Crea un nuevo producto |
+| **Products** | `PUT` | `/api/products/{id}` | **Sí** | Admin | Actualiza los datos de un producto |
+| **Products** | `DELETE` | `/api/products/{id}` | **Sí** | Admin | Elimina un producto por su ID |
+| **Categories** | `GET` | `/api/categories` | No | Público | Lista todas las categorías |
+| **Categories** | `GET` | `/api/categories/{id}` | No | Público | Obtiene una categoría por su ObjectId |
+| **Categories** | `POST` | `/api/categories` | **Sí** | Admin | Crea una nueva categoría |
+| **Categories** | `PUT` | `/api/categories/{id}` | **Sí** | Admin | Actualiza una categoría existente |
+| **Categories** | `DELETE` | `/api/categories/{id}` | **Sí** | Admin | Elimina una categoría por su ID |
+| **Cart** | `GET` | `/api/cart` | **Sí** | Admin | Lista todos los carritos del sistema |
+| **Cart** | `GET` | `/api/cart/{id}` | **Sí** | Admin | Obtiene un carrito por su ID |
+| **Cart** | `GET` | `/api/cart/user/{id}` | **Sí** | Mismo usuario o Admin | Obtiene el carrito del usuario especificado |
+| **Cart** | `POST` | `/api/cart` | **Sí** | Usuario autenticado | Crea o inicializa un carrito con productos |
+| **Cart** | `PUT` | `/api/cart/{id}` | **Sí** | Propietario o Admin | Actualiza la lista completa de productos del carrito |
+| **Cart** | `DELETE` | `/api/cart/{id}` | **Sí** | Propietario o Admin | Elimina un carrito por su ID |
+| **Cart** | `POST` | `/api/cart/add` | **Sí** | Usuario autenticado | Agrega un producto (o suma cantidad) al carrito del usuario |
+| **Orders** | `GET` | `/api/orders` | **Sí** | Admin | Lista todas las órdenes de la tienda |
+| **Orders** | `GET` | `/api/orders/my-orders` | **Sí** | Usuario autenticado | Lista las órdenes realizadas por el usuario logueado |
+| **Orders** | `GET` | `/api/orders/{id}` | **Sí** | Usuario autenticado | Obtiene el detalle completo de una orden por ID |
+| **Orders** | `POST` | `/api/orders` | **Sí** | Usuario autenticado | Crea una nueva orden calculando IVA (16%), envío y totales |
+| **Orders** | `PUT` | `/api/orders/{id}` | **Sí** | Admin | Actualiza el estado del pedido o el estado del pago |
+| **Payment Methods** | `GET` | `/api/payment-methods` | **Sí** | Usuario autenticado | Lista los métodos de pago guardados del usuario |
+| **Payment Methods** | `GET` | `/api/payment-methods/{id}` | **Sí** | Admin | Obtiene un método de pago por su ID |
+| **Payment Methods** | `POST` | `/api/payment-methods` | **Sí** | Usuario autenticado | Agrega un método de pago (tarjeta, PayPal, etc.) |
+| **Payment Methods** | `PUT` | `/api/payment-methods/{id}` | **Sí** | Usuario autenticado | Actualiza un método de pago existente |
+| **Payment Methods** | `DELETE` | `/api/payment-methods/{id}` | **Sí** | Usuario autenticado | Elimina un método de pago |
+| **Addresses** | `GET` | `/api/addresses` | **Sí** | Usuario autenticado | Lista las direcciones guardadas del usuario |
+| **Addresses** | `GET` | `/api/addresses/{id}` | **Sí** | Usuario autenticado | Obtiene una dirección específica por ID |
+| **Addresses** | `POST` | `/api/addresses` | **Sí** | Usuario autenticado | Registra una nueva dirección de envío |
+| **Addresses** | `PUT` | `/api/addresses/{id}` | **Sí** | Usuario autenticado | Actualiza una dirección existente |
+| **Addresses** | `DELETE` | `/api/addresses/{id}` | **Sí** | Usuario autenticado | Elimina una dirección por su ID |
+| **Users** | `GET` | `/api/users` | **Sí** | Admin | Lista todos los usuarios registrados |
+| **Users** | `GET` | `/api/users/{id}` | **Sí** | Mismo usuario o Admin | Obtiene el perfil de un usuario por su ID |
+| **Users** | `POST` | `/api/users` | **Sí** | Admin | Crea un usuario con rol asignado directamente |
+| **Users** | `PUT` | `/api/users/{id}` | **Sí** | Mismo usuario o Admin | Actualiza los datos personales de un usuario |
+| **Users** | `DELETE` | `/api/users/{id}` | **Sí** | Admin | Elimina un usuario por su ID |
+| **Wishlist** | `GET` | `/api/wishlist` | **Sí** | Usuario autenticado | Obtiene la lista de favoritos del usuario |
+| **Wishlist** | `POST` | `/api/wishlist` | **Sí** | Usuario autenticado | Agrega un producto a la lista de deseos |
+| **Wishlist** | `DELETE` | `/api/wishlist/products/{productId}` | **Sí** | Usuario autenticado | Quita un producto de la lista de deseos |
+| **Wishlist** | `GET` | `/api/wishlist/all` | **Sí** | Admin | Lista todas las listas de deseos del sistema |
+| **Wishlist** | `GET` | `/api/wishlist/user/{id}` | **Sí** | Mismo usuario o Admin | Obtiene los favoritos de un usuario en particular |
+| **Wishlist** | `DELETE` | `/api/wishlist/{id}` | **Sí** | Usuario autenticado | Elimina una lista de deseos completa |
+| **Upload** | `POST` | `/api/upload` | **Sí** | Admin | Sube una imagen a Cloudinary (`multipart/form-data`) |
+
+---
+
+### Cómo levantar y probar Swagger UI
+
+1. En la carpeta `ecommerce-api`, inicia el servidor:
+   ```bash
+   cd ecommerce-api
+   npm start
+   # o en modo desarrollo:
+   npm run dev
+   ```
+2. Abre tu navegador en:
+   ```
+   http://localhost:4000/api-docs
+   ```
+3. Para probar endpoints con candado (`bearerAuth`):
+   * Haz una petición en `/auth/login` con un usuario (o admin).
+   * Copia el `token` de la respuesta.
+   * Haz clic en el botón verde **Authorize** (arriba a la derecha en Swagger).
+   * Pega el token y haz clic en **Authorize** -> **Close**.
+   * Ahora puedes probar cualquiera de los endpoints protegidos con **Try it out** -> **Execute**.
+
+
+---
+
+## 9. Variables de Entorno para Producción (Backend y Frontend)
+
+Para evitar que el proyecto se rompa al desplegar el frontend y el backend en servicios separados y la base de datos en MongoDB Atlas, se eliminaron las URLs fijas a `localhost` y se delegaron a variables de entorno con valores por defecto para seguir trabajando en local sin fricción.
+
+### Cambios realizados en el código
+
+1. **Frontend (`ecommerce-app/src/services/apiClient.js`):**
+   * Se configuró `process.env.REACT_APP_API_URL || "http://localhost:4000/api"`.
+   * Ahora tanto las llamadas generales (`baseURL`) como la llamada de renovación de sesión (`/auth/refresh`) apuntan dinámicamente a la URL del backend configurada en producción.
+   * Se dejó listo el archivo [`ecommerce-app/.env.example`](file:///C:/Indapdos/3Modulo/FS2026-01-Integracion/ecommerce-app/.env.example).
+
+2. **Backend (`ecommerce-api/server.js`):**
+   * Se actualizó la configuración de CORS para leer `process.env.CORS_ORIGIN || "http://localhost:3000"`.
+   * Ahora soporta múltiples URLs separadas por coma (por ejemplo, si tienes tu dominio oficial y una URL de vista previa en Vercel/Netlify), además de permitir herramientas de prueba como Postman o llamadas servidor a servidor.
+   * Se dejó listo el archivo [`ecommerce-api/.env.example`](file:///C:/Indapdos/3Modulo/FS2026-01-Integracion/ecommerce-api/.env.example).
+
+---
+
+### Variables a configurar en Producción (Explicación sencilla)
+
+#### A) En el servicio del Frontend (Vercel, Netlify, Render, etc.)
+
+| Variable | ¿Para qué sirve en palabras simples? | Ejemplo de valor en producción |
+| :--- | :--- | :--- |
+| `REACT_APP_API_URL` | Es la dirección de internet donde estará viviendo tu backend para que la aplicación web sepa a dónde enviar los datos del login, productos, carrito y compras. **Debe terminar en `/api`**. | `https://mi-api-ecommerce.onrender.com/api` |
+
+> **Nota para React:** Todas las variables de entorno que el navegador necesite leer en Create React App deben empezar obligatoriamente con el prefijo `REACT_APP_`.
+
+---
+
+#### B) En el servicio del Backend (Render, Railway, Fly.io, VPS, etc.)
+
+| Variable | ¿Para qué sirve en palabras simples? | Ejemplo de valor en producción |
+| :--- | :--- | :--- |
+| `NODE_ENV` | Le avisa a Node.js que está en producción. Activa optimizaciones de velocidad y **apaga automáticamente Swagger (`/api-docs`)** para que nadie de afuera vea la estructura interna de tu API. | `production` |
+| `PORT` | El puerto de red donde escucha el servidor. En la mayoría de plataformas en la nube (Render, Railway, Heroku) la plataforma lo asigna sola en automático. | `4000` (o el asignado por la nube) |
+| `CORS_ORIGIN` | **Regla de seguridad del navegador.** Le dice a tu backend: *"Solo acepta peticiones que vengan de esta página web"*. Aquí pones la URL pública de tu frontend. Si tienes más de una, puedes separarlas con coma. | `https://mi-tienda-frontend.vercel.app` |
+| `MONGODB_URI` | La cadena de conexión a tu base de datos en la nube (MongoDB Atlas). Contiene tu usuario, contraseña y el nombre del cluster. | `mongodb+srv://usuario:password@cluster0.abcde.mongodb.net/ecommerce` |
+| `JWT_SECRET` | La clave secreta maestra con la que tu servidor firma los tokens de acceso del usuario. Debe ser una cadena larga y aleatoria. | `c48e7a6829b3f019c...` (64 caracteres) |
+| `JWT_REFRESH_TOKEN` | La clave secreta para firmar los tokens de renovación de sesión. Debe ser diferente a `JWT_SECRET`. | `d91e6b8910f2c45a...` (64 caracteres) |
+| `JWT_EXPIRES_IN` | Tiempo de vida del token de acceso antes de pedir renovación. | `1h` (1 hora) |
+| `JWT_REFRESH_EXPIRES_IN` | Tiempo máximo que una sesión puede permanecer abierta sin volver a pedir usuario y contraseña. | `7d` (7 días) |
+| `CLOUDINARY_CLOUD_NAME` | *(Opcional)* Nombre de tu nube en Cloudinary si vas a subir fotos de productos reales. | `mi_cloud_name` |
+| `CLOUDINARY_API_KEY` | *(Opcional)* Llave pública de tu cuenta de Cloudinary. | `123456789012345` |
+| `CLOUDINARY_API_SECRET` | *(Opcional)* Llave privada de tu cuenta de Cloudinary. | `aBcDeFgHiJkLmNoPqRsTuVw` |

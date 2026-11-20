@@ -43,10 +43,68 @@ const updateCategoryValidation = [
     .withMessage("Parent category must be a valid MongoDB ObjectId"),
 ];
 
+/**
+ * @openapi
+ * /categories:
+ *   get:
+ *     summary: Lista todas las categorías
+ *     tags:
+ *       - Categories
+ *     responses:
+ *       200:
+ *         description: Un arreglo de categorías
+ */
 router.get("/categories", getCategories);
 
+/**
+ * @openapi
+ * /categories/{id}:
+ *   get:
+ *     summary: Obtiene una categoría por su ID
+ *     tags:
+ *       - Categories
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID de la categoría (ObjectId de MongoDB)
+ *     responses:
+ *       200:
+ *         description: Detalle de la categoría
+ *       400:
+ *         description: ID de categoría inválido
+ *       404:
+ *         description: Categoría no encontrada
+ */
 router.get("/categories/:id", categoryIdValidation, validate, getCategoryById);
 
+/**
+ * @openapi
+ * /categories:
+ *   post:
+ *     summary: Crea una nueva categoría (solo administradores)
+ *     tags:
+ *       - Categories
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Category'
+ *     responses:
+ *       201:
+ *         description: Categoría creada exitosamente
+ *       400:
+ *         description: Datos inválidos
+ *       401:
+ *         description: No autenticado
+ *       403:
+ *         description: Acceso denegado (requiere rol de administrador)
+ */
 router.post(
   "/categories",
   authMiddleware,
@@ -56,6 +114,40 @@ router.post(
   createCategory,
 );
 
+/**
+ * @openapi
+ * /categories/{id}:
+ *   put:
+ *     summary: Actualiza una categoría existente (solo administradores)
+ *     tags:
+ *       - Categories
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID de la categoría
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Category'
+ *     responses:
+ *       200:
+ *         description: Categoría actualizada exitosamente
+ *       400:
+ *         description: Datos inválidos
+ *       401:
+ *         description: No autenticado
+ *       403:
+ *         description: Acceso denegado (requiere rol de administrador)
+ *       404:
+ *         description: Categoría no encontrada
+ */
 router.put(
   "/categories/:id",
   authMiddleware,
@@ -65,6 +157,34 @@ router.put(
   updateCategory,
 );
 
+/**
+ * @openapi
+ * /categories/{id}:
+ *   delete:
+ *     summary: Elimina una categoría por su ID (solo administradores)
+ *     tags:
+ *       - Categories
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID de la categoría a eliminar
+ *     responses:
+ *       204:
+ *         description: Categoría eliminada exitosamente
+ *       400:
+ *         description: ID inválido
+ *       401:
+ *         description: No autenticado
+ *       403:
+ *         description: Acceso denegado (requiere rol de administrador)
+ *       404:
+ *         description: Categoría no encontrada
+ */
 router.delete(
   "/categories/:id",
   authMiddleware,

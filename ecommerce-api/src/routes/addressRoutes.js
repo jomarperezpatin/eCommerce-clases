@@ -34,10 +34,80 @@ const updateAddressValidation = [
     .withMessage("Address cannot be empty"),
 ];
 
+/**
+ * @openapi
+ * /addresses:
+ *   get:
+ *     summary: Lista las direcciones guardadas del usuario autenticado
+ *     tags:
+ *       - Addresses
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de direcciones del usuario
+ *       401:
+ *         description: No autenticado
+ */
 router.get("/addresses", authMiddleware, getUserAddresses);
 
-router.get("/addresses/:id", authMiddleware, addressIdValidation, validate, getAddressById);
+/**
+ * @openapi
+ * /addresses/{id}:
+ *   get:
+ *     summary: Obtiene una dirección por su ID
+ *     tags:
+ *       - Addresses
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID de la dirección (ObjectId)
+ *     responses:
+ *       200:
+ *         description: Detalle de la dirección
+ *       400:
+ *         description: ID inválido
+ *       401:
+ *         description: No autenticado
+ *       404:
+ *         description: Dirección no encontrada
+ */
+router.get(
+  "/addresses/:id",
+  authMiddleware,
+  addressIdValidation,
+  validate,
+  getAddressById,
+);
 
+/**
+ * @openapi
+ * /addresses:
+ *   post:
+ *     summary: Registra una nueva dirección para el usuario
+ *     tags:
+ *       - Addresses
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/AddressInput'
+ *     responses:
+ *       201:
+ *         description: Dirección creada exitosamente
+ *       400:
+ *         description: Datos inválidos
+ *       401:
+ *         description: No autenticado
+ */
 router.post(
   "/addresses",
   authMiddleware,
@@ -46,6 +116,38 @@ router.post(
   createAddress,
 );
 
+/**
+ * @openapi
+ * /addresses/{id}:
+ *   put:
+ *     summary: Actualiza una dirección existente
+ *     tags:
+ *       - Addresses
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID de la dirección
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/AddressInput'
+ *     responses:
+ *       200:
+ *         description: Dirección actualizada exitosamente
+ *       400:
+ *         description: Datos inválidos
+ *       401:
+ *         description: No autenticado
+ *       404:
+ *         description: Dirección no encontrada
+ */
 router.put(
   "/addresses/:id",
   authMiddleware,
@@ -54,6 +156,32 @@ router.put(
   updateAddress,
 );
 
+/**
+ * @openapi
+ * /addresses/{id}:
+ *   delete:
+ *     summary: Elimina una dirección
+ *     tags:
+ *       - Addresses
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID de la dirección a eliminar
+ *     responses:
+ *       200:
+ *         description: Dirección eliminada exitosamente
+ *       400:
+ *         description: ID inválido
+ *       401:
+ *         description: No autenticado
+ *       404:
+ *         description: Dirección no encontrada
+ */
 router.delete(
   "/addresses/:id",
   authMiddleware,

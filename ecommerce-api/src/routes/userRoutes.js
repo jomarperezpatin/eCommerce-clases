@@ -45,8 +45,53 @@ const updateUserValidation = [
     .withMessage("Role must be customer or admin"),
 ];
 
+/**
+ * @openapi
+ * /users:
+ *   get:
+ *     summary: Lista todos los usuarios registrados (solo administradores)
+ *     tags:
+ *       - Users
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de usuarios
+ *       401:
+ *         description: No autenticado
+ *       403:
+ *         description: Acceso denegado (requiere rol de administrador)
+ */
 router.get("/users", authMiddleware, isAdmin, getUsers);
 
+/**
+ * @openapi
+ * /users/{id}:
+ *   get:
+ *     summary: Obtiene el perfil de un usuario por su ID
+ *     tags:
+ *       - Users
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del usuario (ObjectId)
+ *     responses:
+ *       200:
+ *         description: Perfil del usuario encontrado
+ *       400:
+ *         description: ID inválido
+ *       401:
+ *         description: No autenticado
+ *       403:
+ *         description: Acceso denegado (solo propio usuario o admin)
+ *       404:
+ *         description: Usuario no encontrado
+ */
 router.get(
   "/users/:id",
   authMiddleware,
@@ -56,6 +101,31 @@ router.get(
   getUserById,
 );
 
+/**
+ * @openapi
+ * /users:
+ *   post:
+ *     summary: Crea un nuevo usuario directamente (solo administradores)
+ *     tags:
+ *       - Users
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UserInput'
+ *     responses:
+ *       201:
+ *         description: Usuario creado exitosamente
+ *       400:
+ *         description: Datos inválidos o email ya registrado
+ *       401:
+ *         description: No autenticado
+ *       403:
+ *         description: Acceso denegado (requiere rol de administrador)
+ */
 router.post(
   "/users",
   authMiddleware,
@@ -65,6 +135,40 @@ router.post(
   createUser,
 );
 
+/**
+ * @openapi
+ * /users/{id}:
+ *   put:
+ *     summary: Actualiza los datos de un usuario
+ *     tags:
+ *       - Users
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del usuario
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UpdateUserInput'
+ *     responses:
+ *       200:
+ *         description: Usuario actualizado exitosamente
+ *       400:
+ *         description: Datos inválidos
+ *       401:
+ *         description: No autenticado
+ *       403:
+ *         description: Acceso denegado (solo propio usuario o admin)
+ *       404:
+ *         description: Usuario no encontrado
+ */
 router.put(
   "/users/:id",
   authMiddleware,
@@ -74,6 +178,34 @@ router.put(
   updateUser,
 );
 
+/**
+ * @openapi
+ * /users/{id}:
+ *   delete:
+ *     summary: Elimina un usuario por su ID (solo administradores)
+ *     tags:
+ *       - Users
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del usuario a eliminar
+ *     responses:
+ *       204:
+ *         description: Usuario eliminado
+ *       400:
+ *         description: ID inválido
+ *       401:
+ *         description: No autenticado
+ *       403:
+ *         description: Acceso denegado (requiere rol de administrador)
+ *       404:
+ *         description: Usuario no encontrado
+ */
 router.delete(
   "/users/:id",
   authMiddleware,

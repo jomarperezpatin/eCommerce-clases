@@ -61,6 +61,7 @@ export default function Cart() {
             <Button
               variant="primary"
               onClick={() => navigate("/checkout")}
+              data-testid="proceed-to-checkout-btn"
               size="lg"
               disabled={!cartItems || cartItems.length === 0}
               title={
