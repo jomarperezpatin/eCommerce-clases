@@ -1,42 +1,25 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "../components/common/Button";
 import Loading from "../components/common/Loading/Loading";
 import ErrorMessage from "../components/common/ErrorMessage/ErrorMessage";
 import ProductTable from "../components/Admin/ProductTable/ProductTable";
 import { deleteProduct, getAllProducts } from "../services/productsService";
+import useFetch from "../hooks/useFetch";
 import "./AdminProducts.css";
 
 export default function AdminProducts() {
   const navigate = useNavigate();
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const {
+    data: productsData,
+    loading,
+    error,
+    setData: setProducts,
+  } = useFetch(getAllProducts, [], {
+    default: "No se pudieron cargar los productos",
+  });
+  const products = productsData || [];
   const [deletingId, setDeletingId] = useState(null);
-
-  useEffect(() => {
-    let ignore = false;
-
-    const loadProducts = async () => {
-      try {
-        const data = await getAllProducts();
-        if (ignore) return;
-        setProducts(data);
-      } catch (err) {
-        if (ignore) return;
-        setError(
-          err.response?.data?.message || "No se pudieron cargar los productos"
-        );
-      } finally {
-        if (!ignore) setLoading(false);
-      }
-    };
-
-    loadProducts();
-    return () => {
-      ignore = true;
-    };
-  }, []);
 
   const handleEdit = (id) => navigate(`/admin/products/${id}/edit`);
 

@@ -1,47 +1,25 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import { Link } from "react-router-dom";
-import { useCart } from "../../context/CartContext";  
+import { useCart } from "../../context/CartContext";
 import Breadcrumb from "../../layout/Breadcrumb/Breadcrumb";
 import { getProductById } from "../../services/productsService";
 import AddToCartButton from "../common/AddToCartButton/AddToCartButton";
 import Badge from "../common/Badge";
 import ErrorMessage from "../common/ErrorMessage/ErrorMessage";
 import Loading from "../common/Loading/Loading";
+import useFetch from "../../hooks/useFetch";
 import "./ProductDetails.css";
 
 export default function ProductDetails({ productId }) {
   const { getQuantityInCart } = useCart();
   // La foto que el carrito animado se lleva al Header
   const imageRef = useRef(null);
-  const [product, setProduct] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
-  useEffect(() => {
-    setLoading(true);
-    setError(null);
-    getProductById(productId)
-      .then((foundProduct) => {
-        if (!foundProduct) {
-          setError("Producto no encontrado");
-        } else {
-          setProduct(foundProduct);
-        }
-      })
-      .catch((err) => {
-        const status = err.response?.status;
-        if (status === 404) {
-          setError("Este producto no existe o fue removido");
-        } else if (status >= 500){
-          setError("Tuvimos un problema con el servidor. Intentalo mas tarde");
-        } else if (!err.response){
-          setError("No pudimos conectar, revisa tu conexion")
-        } else {
-          setError("Ocurrio un error al cargar el producto")
-        }
-      })
-      .finally(() => setLoading(false));
-  }, [productId]);
+  const { data: product, loading, error } = useFetch(
+    () => getProductById(productId),
+    [productId],
+    { notFoundOnFalsy: true }
+  );
 
   const resolvedCategory = product?.category || null;
 
@@ -73,7 +51,7 @@ export default function ProductDetails({ productId }) {
 
   return (
     <div className="product-details-container">
-      <Breadcrumb categories={resolvedCategory}/>
+      <Breadcrumb categories={resolvedCategory} />
       <div className="product-details-main">
         <div className="product-details-image">
           <img

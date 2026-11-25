@@ -2,11 +2,17 @@ import { loginRequest, registerRequest } from "../services/authService";
 
 
 export async function register(name, email, password, phone) {
-  try{
+  try {
     await registerRequest(name, email, password, phone);
     return await login(email, password);
-  }catch (err){
-    const msg = err.response?.data?.message ||  "Error al crear la cuenta";
+  } catch (err) {
+    const data = err.response?.data;
+    const msg =
+      data?.errors?.[0]?.msg ||
+      data?.message ||
+      (!err.response
+        ? "No pudimos conectar con el servidor, revisa tu conexión"
+        : "Error al crear la cuenta");
     return { success: false, error: msg };
   }
 }
@@ -16,9 +22,15 @@ export async function login(email, password) {
     const data = await loginRequest(email, password);
     localStorage.setItem("authToken", data.token);
     localStorage.setItem("refreshToken", data.refreshToken);
-    return { success: true};
+    return { success: true };
   } catch (err) {
-    const msg = err.response?.data?.message ||  "Error al iniciar sesión";
+    const data = err.response?.data;
+    const msg =
+      data?.errors?.[0]?.msg ||
+      data?.message ||
+      (!err.response
+        ? "No pudimos conectar con el servidor, revisa tu conexión"
+        : "Error al iniciar sesión");
     return { success: false, error: msg };
   }
 }
